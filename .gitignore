@@ -66,3 +66,22 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# ESP-IDF
+build/
+managed_components/
+sdkconfig
+sdkconfig.old
+
+# Web UI
+web/node_modules/
+web/dist/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Editors
+.vscode/*
+!.vscode/extensions.json

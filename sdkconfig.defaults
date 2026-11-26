@@ -1,0 +1,14 @@
+# Common defaults for all targets and variants.
+# Load order: this file -> sdkconfig.defaults.<target> -> variants/<variant>.sdkconfig
+# (see tools/build.py). Board quirks belong in the variant file, not here.
+
+# Shielded modules: QIO 80 MHz. IPSTube Gen1 overrides this (variants/esp32-8MB-dio.sdkconfig).
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+
+# Partition table at 0x9000 gives the bootloader headroom (D-017).
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_OFFSET=0x9000
+
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y
+CONFIG_ESP_TASK_WDT_PANIC=y
