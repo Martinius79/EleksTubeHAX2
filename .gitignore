@@ -85,3 +85,6 @@ __pycache__/
 # Editors
 .vscode/*
 !.vscode/extensions.json
+
+# Local-only notes (see AGENTS.md)
+.local/
