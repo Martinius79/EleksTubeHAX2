@@ -9,3 +9,4 @@
 *.bmp  binary
 *.bin  binary
 *.etf  binary
+*.expect binary
