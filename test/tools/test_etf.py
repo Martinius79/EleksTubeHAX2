@@ -245,3 +245,60 @@ class Cli(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Fixtures(unittest.TestCase):
+    """Shared fixtures for the C decoder (test/host/fixtures) must be current and agree with the
+    Python reference."""
+
+    DIR = Path(__file__).resolve().parents[2] / "test" / "host" / "fixtures"
+
+    def test_fixtures_up_to_date(self):
+        import subprocess
+
+        with tempfile.TemporaryDirectory() as tmp:
+            subprocess.run([sys.executable, str(self.DIR / "generate.py"), tmp], check=True)
+            fresh = sorted(p.name for p in Path(tmp).iterdir())
+            committed = sorted(p.name for p in self.DIR.iterdir()
+                               if p.suffix in (".etf", ".expect", ".txt"))
+            self.assertEqual(fresh, committed, "run test/host/fixtures/generate.py")
+            for name in fresh:
+                new, old = (Path(tmp) / name).read_bytes(), (self.DIR / name).read_bytes()
+                if new == old:
+                    continue
+                # DEFLATE output differs between zlib implementations (CPython on Windows ships
+                # zlib-ng): .etf files must then still be equivalent, pixel data and manifest
+                # must match exactly.
+                self.assertTrue(name.endswith(".etf"),
+                                f"{name} outdated - run test/host/fixtures/generate.py")
+                self.assertEqual(self._digest(new), self._digest(old),
+                                 f"{name} outdated - run test/host/fixtures/generate.py")
+
+    @staticmethod
+    def _digest(buf: bytes):
+        """Outcome and decoded pixels of an .etf file, independent of the DEFLATE byte stream."""
+        try:
+            face = etf.read_face(buf)
+        except etf.EtfError as ex:
+            try:
+                face = etf.read_face(buf, verify_crc=False)
+                return ("crc_error",)
+            except etf.EtfError:
+                return ("error", str(ex).split(":")[0])
+        return ("ok", face.canvas_w, face.canvas_h, tuple(
+            (g.code, g.x, g.y, g.w, g.h, g.encoding, g.bg_color, g.pixels.tobytes())
+            for g in face.glyphs))
+
+    def test_python_reference_agrees_with_manifest(self):
+        for line in (self.DIR / "manifest.txt").read_text(encoding="utf-8").splitlines():
+            name, outcome = line.split()
+            buf = (self.DIR / f"{name}.etf").read_bytes()
+            with self.subTest(fixture=name, expected=outcome):
+                if outcome == "ok":
+                    face = etf.read_face(buf)
+                    got = b"".join(etf.be16(etf.render_canvas(face, g).reshape(-1))
+                                   for g in face.glyphs)
+                    self.assertEqual(got, (self.DIR / f"{name}.expect").read_bytes())
+                else:
+                    with self.assertRaises(etf.EtfError):
+                        etf.read_face(buf)

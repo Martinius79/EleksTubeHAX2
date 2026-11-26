@@ -41,7 +41,7 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
   glyph count, glyph table with offsets), encodings `RAW565`, `RLE565`, `PAL8_RLE`,
   `DEFLATE565`, `DEFLATE_PAL8` (D-020), per-glyph encoding, glyph codes = Unicode code points.
   Glyphs 0–9 required; optional `:`, blank, AM/PM, icons.
-- [ ] **P1.2** – C decoder component `components/etf`: streaming, line by line into a caller
+- [x] **P1.2** – C decoder component `components/etf`: streaming, line by line into a caller
   buffer (no full frame needed), bounds-checked against corrupt files. Inflate via ROM `tinfl`
   on target; the `linux` host build has no ROM → vendored miniz `tinfl` (MIT) behind the same
   small interface. Verify `esp_rom_crc32_le` against the zlib CRC test vector.
@@ -118,7 +118,9 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
 - [ ] **P4.6** – Web UI `web/` (Preact + Vite + TypeScript), responsive, gzip, served from a
   dedicated partition or embedded; built in CI.
 - [ ] **P4.7** – Face upload in the browser: canvas resize to the device size, JS `.etf`
-  encoder (bit-identical to Python, parity test in CI), preview, upload.
+  encoder (decodes pixel-identical to Python; byte identity is impossible because DEFLATE
+  output differs between zlib implementations), validated against `test/host/fixtures` in CI,
+  preview, upload.
 - [ ] **P4.8** – Face storage management on LittleFS: quota, delete, at least one face always
   present (built-in fallback face embedded in the app).
 - [ ] **P4.9** – Timezone: picker in the web UI + optional one-shot/weekly IP geolocation
@@ -209,6 +211,16 @@ SI HAI is not supported in v2. Each board without owner hardware is released as
 
 <!-- Newest first. Date – task ID – note (measurements, surprises, follow-ups). -->
 
+- 2026-11-26 – P1.2 – `components/etf`: parser + streaming row decoder for all 5 encodings,
+  memory and FILE sources, work buffer 256 B (+512 B palette, +~11 KB tinfl state + 4 KB dict
+  for DEFLATE). Host build uses miniz 1.14 `tinfl` (public domain) against the ROM header; that
+  header hardcodes Xtensa options and redefines them on x86 → included as SYSTEM dir on linux.
+  Shared fixtures `test/host/fixtures` (24 cases, 116 KB) from `generate.py`; Python and C must
+  classify them identically and decode to the same `.expect` pixels. Mutation check showed that
+  a disabled row-bounds check still "passed" (overflow, then the expected error) → host tests
+  now run with ASan + UBSan (alignment check off: miniz.h enables unaligned loads only on x86).
+  CPython on Windows ships zlib-ng 2.2.4, Linux zlib 1.3: DEFLATE bytes differ, so fixture
+  freshness is checked on decoded content, and P4.7 parity is defined on pixels.
 - 2026-11-26 – P0.8 – Local tests via WSL Ubuntu 24.04 (same base as the CI container) with
   ESP-IDF v6.1.1 in `~/esp/esp-idf`. `tools/wsl_test.sh` rsyncs the Windows working tree to
   `~/dev/EleksTubeHAX2` and runs Python + host tests: first run 23 s, incremental 9 s (Python

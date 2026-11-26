@@ -310,6 +310,9 @@ def read_face(buf: bytes, verify_crc: bool = True) -> Face:
             raise EtfError(f"glyph U+{code:04X}: unknown encoding {enc}")
         if doff % 4 or doff < hsize or doff + dsize > len(buf):
             raise EtfError(f"glyph U+{code:04X}: data outside file")
+        if dsize and ((doff < tend and toff < doff + dsize) or
+                      (moff and msize and doff < moff + msize and moff < doff + dsize)):
+            raise EtfError(f"glyph U+{code:04X}: data overlaps glyph table or metadata")
         data = buf[doff:doff + dsize]
         if verify_crc and zlib.crc32(data) != dcrc:
             raise EtfError(f"glyph U+{code:04X}: data CRC mismatch")

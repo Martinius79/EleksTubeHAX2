@@ -107,7 +107,7 @@ jobs:
       - run: pip install -r tools/requirements.txt
       - name: clang-format check
         run: |
-          files=$(git ls-files '*.c' '*.h' '*.cpp' '*.hpp')
+          files=$(git ls-files '*.c' '*.h' '*.cpp' '*.hpp' | grep -v '/third_party/' || true)
           [ -z "$files" ] || clang-format --dry-run -Werror $files
       - name: Compile check
         run: python -m compileall -q tools

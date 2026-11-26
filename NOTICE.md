@@ -42,6 +42,7 @@ source.
 | Component | Licence | Source |
 |-----------|---------|--------|
 | ESP-IDF | Apache-2.0 | https://github.com/espressif/esp-idf |
+| miniz 1.14 `tinfl` (host tests only, `components/etf/third_party`) | Unlicense (public domain) | https://github.com/richgel999/miniz |
 
 ## Clock-face graphics
 

@@ -43,7 +43,8 @@ def main() -> int:
             return 1
     if idf("build"):
         return 1
-    return subprocess.call([str(BUILD / "host_tests.elf")])
+    # tests read their fixtures relative to test/host
+    return subprocess.call([str(BUILD / "host_tests.elf")], cwd=PROJECT)
 
 
 if __name__ == "__main__":
