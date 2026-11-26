@@ -81,6 +81,19 @@ jobs:
             build/${{ matrix.variant }}/ota_data_initial.bin
             build/${{ matrix.variant }}/flash_args
 
+  host-tests:
+    name: Host tests
+    runs-on: ubuntu-latest
+    container: espressif/idf:v6.1.1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and run
+        shell: bash
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          . "$IDF_PATH/export.sh" > /dev/null
+          python tools/host_test.py
+
   python-tools:
     name: Tools & style
     runs-on: ubuntu-latest
