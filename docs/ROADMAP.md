@@ -4,7 +4,7 @@ Living work plan for the ESP-IDF rewrite. Work through it top to bottom; tick bo
 finished and note anything surprising under *Progress log*. Architecture decisions live in
 [DECISIONS.md](DECISIONS.md) – change a decision there first, then update this plan.
 
-**Current focus:** Phase 0 – project skeleton
+**Current focus:** Phase 1 – clock-face image format
 **Reference hardware:** IPSTube H401/H402 Gen1 (ESP32, 8 MB, no LED stripe, with Q1 transistor)
 **Predecessor:** [EleksTubeHAX v1](https://github.com/aly-fly/EleksTubeHAX) – hardware knowledge
 source (`include/GLOBAL_DEFINES.h`, `src/ChipSelect.cpp`, `src/Clock.cpp`, `docs/Hardware *`)
@@ -28,12 +28,12 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
 - [x] **P0.5** – Licence & attribution: GPL-3.0 kept, `NOTICE.md` naming SmittyHalibut,
   aly-fly and all EleksTubeHAX contributors; SPDX headers in source files.
 - [x] **P0.6** – `AGENTS.md` / contributor rules (language, git rules, build vs. flash policy).
-- [ ] **P0.7** – CI (GitHub Actions, `espressif/esp-idf-ci-action`): build matrix of all
+- [x] **P0.7** – CI (GitHub Actions, `espressif/esp-idf-ci-action`): build matrix of all
   variants, host tests (P0.8), web UI build (P4.6). Artifacts per variant.
-- [ ] **P0.8** – Host test harness: components built for the `linux` target with Unity,
+- [x] **P0.8** – Host test harness: components built for the `linux` target with Unity,
   run by `idf.py --preview set-target linux` + `ctest`/test runner in CI.
-  *Done when* one dummy test runs locally and in CI.
-- [ ] **P0.9** – Coding style: `.clang-format`, `.editorconfig`; naming conventions in AGENTS.md.
+  *Done when* one dummy test runs locally and in CI. (CI: done; local needs Linux/WSL, see log.)
+- [x] **P0.9** – Coding style: `.clang-format`, `.editorconfig`; naming conventions in AGENTS.md.
 
 ## Phase 1 – Clock-face image format (`.etf`) 
 
@@ -204,6 +204,12 @@ SI HAI is not supported in v2. Each board without owner hardware is released as
 
 <!-- Newest first. Date – task ID – note (measurements, surprises, follow-ups). -->
 
+- 2026-11-26 – P0.7/P0.8/P0.9 – CI green: 7 variants in the `espressif/idf:v6.1.1` container
+  (~2.5 min each, parallel), artifacts with merged binary per variant, host tests, clang-format
+  check (pinned 21.1.8 via pip), nixie faces as artifact. The ESP-IDF `linux` target is still
+  *preview* in v6.1.1 (`tools/host_test.py` falls back to `--preview`). Host tests cannot run on
+  native Windows; this machine has no WSL yet. Actions bumped to checkout/setup-python/
+  upload-artifact v7 (Node 20 deprecation). GitHub `main` has no branch protection yet.
 - 2026-11-26 – P1.7 (started) – v1 nixie face is very likely a stock photo (identical faces in all
   vendor firmwares) → D-018: no v1 faces. Prototype `tools/facegen/nixie.py` renders an own
   nixie set at 135×240 in <1 s (4× supersampling, layered Gaussian glow, red gas fill, hex mesh,
