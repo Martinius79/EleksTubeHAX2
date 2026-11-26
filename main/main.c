@@ -2,6 +2,8 @@
 // EleksTubeHAX2 - firmware entry point.
 
 #include "board.h"
+#include "display.h"
+#include "display_test.h"
 #include "esp_app_desc.h"
 #include "esp_chip_info.h"
 #include "esp_heap_caps.h"
@@ -56,9 +58,16 @@ void app_main(void)
 
     init_nvs();
     const board_profile_t *board = board_get_active();
-    (void)board; // used by the display from P2.4 on
 
     check_builtin_faces();
+    if (board) {
+        esp_err_t err = display_init(board);
+        if (err == ESP_OK) {
+            display_test_run(); // P2.5 bring-up, replaced by the clock mode in P3.6
+        } else {
+            ESP_LOGE(TAG, "display init failed: %s", esp_err_to_name(err));
+        }
+    }
     ESP_LOGI(TAG, "free heap %u bytes, largest block %u bytes",
              (unsigned)heap_caps_get_free_size(MALLOC_CAP_8BIT),
              (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));

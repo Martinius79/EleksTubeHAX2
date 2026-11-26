@@ -72,7 +72,7 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
 - [x] **P2.2** – Profile `ipstube_gen1` from v1 data (see *Hardware notes*).
 - [x] **P2.3** – Profile selection: NVS key `board.profile`; compile-time default per variant
   (`CONFIG_BOARD_DEFAULT_ID`); API `board_save_id()`. Console command `board set <id>` → P4.4.
-- [ ] **P2.4** – `components/display`: `esp_lcd` SPI panel IO, ST7789 driver, init of all six
+- [x] **P2.4** – `components/display`: `esp_lcd` SPI panel IO, ST7789 driver, init of all six
   panels, CS backend interface with `gpio` implementation (`hc595`, `i2c_expander` later).
 - [ ] **P2.5** 🔌 – Draw a test pattern on each digit, then a decoded `.etf` glyph per digit.
 - [ ] **P2.6** 🔌 – Benchmark: decode + transfer time per digit and encoding, free heap,
@@ -213,6 +213,15 @@ SI HAI is not supported in v2. Each board without owner hardware is released as
 
 <!-- Newest first. Date – task ID – note (measurements, surprises, follow-ups). -->
 
+- 2026-11-26 – P2.4 – `components/display`: SPI via `esp_lcd_panel_io` without hardware CS
+  (6 panels exceed the CS lines of the SPI peripheral; the other clocks use 74HC595 / I2C
+  expanders anyway), CS backend `gpio` (hc595 / i2c expander → Phase 7), own ST7789 init
+  ported byte by byte from v1 (the IDF ST7789 driver only sends a minimal init without
+  gamma/VCOM/porch), shared reset, panel power via the enable pin (on/off; PWM in P2.8),
+  streaming API `display_area_begin/write/end` that blocks until each DMA transfer is done.
+  `panel.c` (init sequence, window + offsets) is host-tested with a recording mock (6 tests).
+  `main/display_test.c` prepares P2.5/P2.6: colour per digit, then digit index from the
+  fallback face with draw timing. Not yet run on hardware.
 - 2026-11-26 – P2.1–P2.3 – `components/board`: profile struct (panel, SPI, CS backend, dimming,
   LEDs, input, RTC, buzzer, digit order), table with `ipstube_gen1`, validation (pin exists on
   the chip, not a flash pin, no input-only pin as output, no pin used twice except shared I2C

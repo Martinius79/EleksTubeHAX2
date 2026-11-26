@@ -17,5 +17,6 @@ void app_main(void)
     run_etf_tests();
     run_faces_tests();
     run_board_tests();
+    run_panel_tests();
     exit(UNITY_END());
 }
