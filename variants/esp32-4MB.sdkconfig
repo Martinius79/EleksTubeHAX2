@@ -1,0 +1,3 @@
+# Variant esp32-4MB – EleksTube, EleksTube Gen2, PunkCyber, NovelLife SE, DEsign
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions/4MB.csv"

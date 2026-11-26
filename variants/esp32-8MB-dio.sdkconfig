@@ -1,0 +1,8 @@
+# Variant esp32-8MB-dio – IPSTube H401/H402 Gen1 (weak external flash)
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions/8MB.csv"
+
+# IPSTube Gen1 only: the external Winbond flash is unstable in QIO / at 80 MHz (v1 finding).
+# Re-evaluate with long-run tests in P5.9.
+CONFIG_ESPTOOLPY_FLASHMODE_DIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_40M=y
