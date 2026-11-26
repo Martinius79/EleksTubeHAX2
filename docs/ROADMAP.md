@@ -56,7 +56,7 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
   First style `nixie` (glowing wire, hex anode mesh, unlit cathodes) exists as prototype.
   Next: more styles (7-segment, VFD, neon, flat/minimal), optional font-based digits (only fonts
   with a free licence), direct `.etf` output, later the same generator in the web UI (P4.7).
-  Licence of generated images: D-019.
+  Generated images are CC0-1.0 (D-019).
 
 ## Phase 2 – Board abstraction & display 🔌
 

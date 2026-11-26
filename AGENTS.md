@@ -11,10 +11,11 @@ decisions: [docs/DECISIONS.md](docs/DECISIONS.md), attribution: [NOTICE.md](NOTI
 
 ## Git
 
-- **Commit and push only after an explicit instruction** from the user.
-- **Work on feature branches** (`feature/<topic>`, `fix/<topic>`). `main` only receives reviewed
-  pull requests; never commit or push to `main` directly. Check `git branch --show-current`
-  and `git status` before every commit.
+- **`main` is protected:** it only receives pull requests that the user merges. Never commit,
+  push or merge to `main` yourself.
+- **Feature branches** (`feature/<topic>`, `fix/<topic>`): committing and pushing there is
+  allowed without asking. Check `git branch --show-current` and `git status` before every
+  commit. Opening a PR is fine; merging is the user's decision.
 - Do not switch branches, stash, reset, rebase, force-push, merge PRs or delete branches without
   explicit permission.
 - `origin` is the project repository itself (no fork/upstream setup). PRs target `main` of `origin`.

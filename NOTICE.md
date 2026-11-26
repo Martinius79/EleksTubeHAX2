@@ -46,5 +46,5 @@ source.
 ## Clock-face graphics
 
 v1 clock faces are not included: their origin is undocumented (D-018). Built-in faces are
-rendered by `tools/facegen` from geometry only and are original works of this project; their
-licence is decided in D-019.
+rendered by `tools/facegen` from geometry only and are original works of this project. The
+generated images are released under **CC0-1.0** (D-019); the generator code is GPL-3.0-or-later.
