@@ -37,7 +37,8 @@ The key words MUST, MUST NOT, SHOULD and MAY are used as in RFC 2119.
 ```
 
 Sections MAY appear in a different order; readers MUST use the offsets. Gaps are allowed and
-SHOULD be zero-filled. Sections MUST NOT overlap.
+SHOULD be zero-filled. Sections MUST NOT overlap. Writers SHOULD NOT pad after the last
+section, so that a truncated file is always detected.
 
 ## 3. File header (32 bytes)
 
@@ -54,7 +55,7 @@ SHOULD be zero-filled. Sections MUST NOT overlap.
 | 16 | u32 | `glyph_table_offset` | multiple of 4 |
 | 20 | u32 | `meta_offset` | 0 = no metadata |
 | 24 | u32 | `meta_size` | 0…4096 bytes |
-| 28 | u32 | `header_crc` | CRC32 over bytes 0…27 |
+| 28 | u32 | `header_crc` | CRC32 over header bytes 0…27, then the glyph table, then the metadata (one running CRC) – protects all structural data |
 
 ## 4. Glyph table
 
@@ -169,7 +170,7 @@ be ignored. Defined keys:
 
 Readers MUST check before using a file, and reject it otherwise:
 
-1. `magic`, `version_major`, `header_size`, `header_crc`.
+1. `magic`, `version_major`, `header_size`; table and metadata inside the file; `header_crc`.
 2. `canvas_w`, `canvas_h`, `glyph_count` within the ranges above.
 3. Glyph table inside the file, 4-byte aligned, codes strictly ascending, all ten digits present.
 4. For every glyph: rectangle inside the canvas, `encoding` known, `data_offset + data_size`

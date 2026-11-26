@@ -45,11 +45,13 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
   buffer (no full frame needed), bounds-checked against corrupt files. Inflate via ROM `tinfl`
   on target; the `linux` host build has no ROM → vendored miniz `tinfl` (MIT) behind the same
   small interface. Verify `esp_rom_crc32_le` against the zlib CRC test vector.
-- [ ] **P1.3** – Python encoder `tools/etf/` (Pillow): resize, quantise, choose the smallest
+- [x] **P1.3** – Python encoder `tools/etf/` (Pillow): resize, quantise, choose the smallest
   encoding automatically, CLI `etf encode <dir|images> -o face.etf --size 135x240`.
-- [ ] **P1.4** – Test images `test/images/` (solid, gradient, noise, >256 colours, 1px details,
-  transparency) + golden outputs.
-- [ ] **P1.5** – Host tests: round trip encoder→decoder pixel-exact (lossless modes),
+- [x] **P1.4** – Test images (solid, gradient, noise, >256 colours, exactly 256 colours, 1px
+  details) generated deterministically in `test/tools/test_etf.py` – no binary files in git.
+  Golden `.etf` fixtures for the C decoder are produced from them in P1.2. Transparency
+  (`HAS_KEY`) is specified but not yet produced by the encoder.
+- [x] **P1.5** – Host tests: round trip encoder→decoder pixel-exact (lossless modes),
   corrupt/truncated file handling, size budget report per encoding.
 - [ ] **P1.6** – Encode the generated faces (P1.7) to `.etf` in both sizes (135×240, 80×160);
   record sizes per encoding in the progress log. v1 faces are not shipped (D-018).
@@ -207,6 +209,13 @@ SI HAI is not supported in v2. Each board without owner hardware is released as
 
 <!-- Newest first. Date – task ID – note (measurements, surprises, follow-ups). -->
 
+- 2026-11-26 – P1.3–P1.5 – `tools/etf/etf.py` (encode/info/decode + reference decoder), 15 unit
+  tests in `test/tools` (round trip per encoding, RLE row boundaries, 4 KB DEFLATE window, byte
+  order, truncation, bit flips, fuzzed pixel streams; ~15 s). Tests found three spec/impl gaps:
+  glyph table was not CRC-protected (→ `header_crc` now covers header + table + metadata),
+  zlib errors leaked, trailing padding hid truncation. Nixie face 135×240 encodes to 241 KB,
+  all glyphs DEFLATE565, cropping trims uniform borders automatically. CI now encodes the
+  nixie face in both sizes as artifact.
 - 2026-11-26 – P1.1 – `docs/FORMAT_ETF.md` v1.0. Size estimate on the generated nixie face
   (135×240, 10 glyphs, 830 colours in glyph 0): RAW565 633 KB, RLE565 525 KB, PAL8 (lossy)
   321 KB, PAL8_RLE 303 KB, DEFLATE565 lossless 321/258/240/232 KB at window 512 B/1 KB/4 KB/

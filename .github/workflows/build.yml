@@ -111,10 +111,14 @@ jobs:
           [ -z "$files" ] || clang-format --dry-run -Werror $files
       - name: Compile check
         run: python -m compileall -q tools
-      - name: Render nixie faces (135x240, 80x160)
+      - name: Python unit tests
+        run: python -m unittest discover -s test/tools -v
+      - name: Render and encode nixie faces (135x240, 80x160)
         run: |
-          python tools/facegen/nixie.py -o out/faces/nixie-135x240 --montage
-          python tools/facegen/nixie.py -o out/faces/nixie-80x160 --size 80x160 --montage
+          for s in 135x240 80x160; do
+            python tools/facegen/nixie.py -o out/faces/nixie-$s --size $s --montage
+            python tools/etf/etf.py encode out/faces/nixie-$s -o out/faces/nixie-glow_$s.etf \n              --name "Nixie Glow" --author "EleksTubeHAX2 facegen" --license CC0-1.0
+          done
       - uses: actions/upload-artifact@v7
         with:
           name: faces
