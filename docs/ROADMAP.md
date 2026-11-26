@@ -4,7 +4,7 @@ Living work plan for the ESP-IDF rewrite. Work through it top to bottom; tick bo
 finished and note anything surprising under *Progress log*. Architecture decisions live in
 [DECISIONS.md](DECISIONS.md) – change a decision there first, then update this plan.
 
-**Current focus:** Phase 1 – clock-face image format
+**Current focus:** Phase 2 – board abstraction & display
 **Reference hardware:** IPSTube H401/H402 Gen1 (ESP32, 8 MB, no LED stripe, with Q1 transistor)
 **Predecessor:** [EleksTubeHAX v1](https://github.com/aly-fly/EleksTubeHAX) – hardware knowledge
 source (`include/GLOBAL_DEFINES.h`, `src/ChipSelect.cpp`, `src/Clock.cpp`, `docs/Hardware *`)
@@ -66,12 +66,12 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
 
 ## Phase 2 – Board abstraction & display 🔌
 
-- [ ] **P2.1** – `components/board`: profile struct (chip, display type/size/offsets/colour
+- [x] **P2.1** – `components/board`: profile struct (chip, display type/size/offsets/colour
   order/inversion, SPI pins + freq, CS backend + pins, enable/dimming pin + mode, LED pin/count,
   input type + pins, RTC type + pins, buzzer, digit order). Profiles as const table.
-- [ ] **P2.2** – Profile `ipstube_gen1` from v1 data (see *Hardware notes*).
-- [ ] **P2.3** – Profile selection: NVS key `board.profile`; compile-time default per variant;
-  console command `board set <id>`.
+- [x] **P2.2** – Profile `ipstube_gen1` from v1 data (see *Hardware notes*).
+- [x] **P2.3** – Profile selection: NVS key `board.profile`; compile-time default per variant
+  (`CONFIG_BOARD_DEFAULT_ID`); API `board_save_id()`. Console command `board set <id>` → P4.4.
 - [ ] **P2.4** – `components/display`: `esp_lcd` SPI panel IO, ST7789 driver, init of all six
   panels, CS backend interface with `gpio` implementation (`hc595`, `i2c_expander` later).
 - [ ] **P2.5** 🔌 – Draw a test pattern on each digit, then a decoded `.etf` glyph per digit.
@@ -111,7 +111,7 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
   Improv-WiFi over serial (for ESP Web Tools).
 - [ ] **P4.3** – mDNS `elekstube-<mac3>.local`, device ID scheme as in v1
   (`lower(name)-<last3MACbytes>`).
-- [ ] **P4.4** – `esp_console` CLI over UART/USB-CDC: `wifi`, `board`, `config get/set`,
+- [ ] **P4.4** – `esp_console` CLI over UART/USB-CDC: `wifi`, `board list/set` (P2.3), `config get/set`,
   `face`, `reboot`, `bench` (v1 TODO "config via serial terminal").
 - [ ] **P4.5** – REST API (`esp_http_server`): `/api/status`, `/api/config` (GET/PATCH),
   `/api/faces` (list/upload/delete/select), `/api/wifi`, `/api/ota`, `/api/system`.
@@ -213,6 +213,14 @@ SI HAI is not supported in v2. Each board without owner hardware is released as
 
 <!-- Newest first. Date – task ID – note (measurements, surprises, follow-ups). -->
 
+- 2026-11-26 – P2.1–P2.3 – `components/board`: profile struct (panel, SPI, CS backend, dimming,
+  LEDs, input, RTC, buzzer, digit order), table with `ipstube_gen1`, validation (pin exists on
+  the chip, not a flash pin, no input-only pin as output, no pin used twice except shared I2C
+  bus lines), selection stored id → build default → none (display untouched). v1 details: Gen1
+  panels run without CGRAM offset and with RGB order, while EleksTube/IPSTube S3 use offset
+  (52, 40) and BGR – TFT_eSPI couples CGRAM_OFFSET to BGR; ST7789 uses SPI mode 3. To verify on
+  hardware in P2.5. Boards without Q1 transistor (no hardware dimming) and the optional LED
+  stripe (34 LEDs) become runtime options (P2.8 / P3.4), not separate profiles.
 - 2026-11-26 – P1.6 – Built-in faces (11 glyphs: 0–9 + blank), totals per encoding:
 
   | Face | Size | RAW565 | RLE565 | PAL8_RLE | DEFLATE565 | DEFLATE_PAL8 | .etf |

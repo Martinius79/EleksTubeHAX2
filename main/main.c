@@ -1,14 +1,28 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // EleksTubeHAX2 - firmware entry point.
 
+#include "board.h"
 #include "esp_app_desc.h"
 #include "esp_chip_info.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "faces.h"
+#include "nvs_flash.h"
 
 static const char *TAG = "main";
+
+static void init_nvs(void)
+{
+    esp_err_t err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        // NVS layout from an incompatible version: start fresh (settings are re-entered)
+        ESP_LOGW(TAG, "NVS: %s - erasing", esp_err_to_name(err));
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(err);
+}
 
 /** Verify and fully decode the embedded fallback faces; logs timing as a first benchmark. */
 static void check_builtin_faces(void)
@@ -39,6 +53,10 @@ void app_main(void)
 
     ESP_LOGI(TAG, "EleksTubeHAX2 %s (IDF %s), chip model %d rev %d, %d core(s)", app->version,
              app->idf_ver, chip.model, chip.revision, chip.cores);
+
+    init_nvs();
+    const board_profile_t *board = board_get_active();
+    (void)board; // used by the display from P2.4 on
 
     check_builtin_faces();
     ESP_LOGI(TAG, "free heap %u bytes, largest block %u bytes",

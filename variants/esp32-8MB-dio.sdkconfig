@@ -6,3 +6,6 @@ CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions/8MB.csv"
 # Re-evaluate with long-run tests in P5.9.
 CONFIG_ESPTOOLPY_FLASHMODE_DIO=y
 CONFIG_ESPTOOLPY_FLASHFREQ_40M=y
+
+# Board profile until one is stored in NVS (D-003).
+CONFIG_BOARD_DEFAULT_ID="ipstube_gen1"

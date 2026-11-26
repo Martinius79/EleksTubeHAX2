@@ -1,0 +1,12 @@
+menu "EleksTubeHAX2 board"
+
+    config BOARD_DEFAULT_ID
+        string "Default board profile id"
+        default ""
+        help
+            Board profile used until one is stored in NVS (see components/board).
+            Set per image variant in variants/<variant>.sdkconfig. Empty means: no
+            default - the firmware does not touch display hardware until a profile
+            is selected.
+
+endmenu
