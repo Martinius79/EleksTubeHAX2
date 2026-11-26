@@ -25,7 +25,7 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
   partition table per flash size (see D-016, D-017). Build helper `tools/build.py <variant>`.
 - [x] **P0.4** – `.gitattributes` (LF; CRLF for `*.cmd`/`*.bat`), `.gitignore` for `build/`,
   `managed_components/`, `sdkconfig`, `web/node_modules/`, `web/dist/`.
-- [ ] **P0.5** – Licence & attribution: GPL-3.0 kept, `NOTICE.md` naming SmittyHalibut,
+- [x] **P0.5** – Licence & attribution: GPL-3.0 kept, `NOTICE.md` naming SmittyHalibut,
   aly-fly and all EleksTubeHAX contributors; SPDX headers in source files.
 - [ ] **P0.6** – `AGENTS.md` / contributor rules (language, git rules, build vs. flash policy).
 - [ ] **P0.7** – CI (GitHub Actions, `espressif/esp-idf-ci-action`): build matrix of all
@@ -50,7 +50,8 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
   corrupt/truncated file handling, size budget report per encoding.
 - [ ] **P1.6** – Convert the v1 clock faces (`data/*.bmp`) to `.etf` in both sizes; record
   sizes per encoding in the progress log.
-  *Done when* all v1 faces fit and the smallest-encoding choice is documented.
+  *Done when* all v1 faces fit and the smallest-encoding choice is documented, and the origin /
+  licence of each face set is confirmed (only cleared faces are shipped, see NOTICE.md).
 
 ## Phase 2 – Board abstraction & display 🔌
 
@@ -198,6 +199,10 @@ SI HAI is not supported in v2. Each board without owner hardware is released as
 
 <!-- Newest first. Date – task ID – note (measurements, surprises, follow-ups). -->
 
+- 2026-11-26 – P0.5 – `NOTICE.md` with origin projects and v1 contributors (from v1 git history
+  and README §9), README with build + credits. Licence identifier `GPL-3.0-or-later` (v1 only
+  ships the GPL-3.0 text, no "only/or later" statement). Origin/licence of the v1 clock-face
+  graphics is unknown – added as acceptance criterion to P1.6.
 - 2026-11-26 – P0.3 – 7 variants build via `tools/build.py --all` (D-016/D-017). Default QIO 80 MHz,
   only `esp32-8MB-dio` (IPSTube Gen1) uses DIO 40 MHz. `flash_args` shows `dio` for QIO images –
   expected: the ROM loads in DIO, the 2nd-stage bootloader switches to QIO. Bootloader free space
