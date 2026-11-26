@@ -37,11 +37,14 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
 
 ## Phase 1 – Clock-face image format (`.etf`) 
 
-- [ ] **P1.1** – Write the format spec `docs/FORMAT_ETF.md`: header (magic, version, w/h,
-  glyph count, glyph table with offsets), encodings `RAW565`, `RLE565`, `PAL8_RLE`, (`QOI` optional),
-  per-glyph encoding allowed. Glyphs 0–9 required; optional `:`, blank, AM/PM, icons.
+- [x] **P1.1** – Write the format spec `docs/FORMAT_ETF.md`: header (magic, version, w/h,
+  glyph count, glyph table with offsets), encodings `RAW565`, `RLE565`, `PAL8_RLE`,
+  `DEFLATE565`, `DEFLATE_PAL8` (D-020), per-glyph encoding, glyph codes = Unicode code points.
+  Glyphs 0–9 required; optional `:`, blank, AM/PM, icons.
 - [ ] **P1.2** – C decoder component `components/etf`: streaming, line by line into a caller
-  buffer (no full frame needed), bounds-checked against corrupt files.
+  buffer (no full frame needed), bounds-checked against corrupt files. Inflate via ROM `tinfl`
+  on target; the `linux` host build has no ROM → vendored miniz `tinfl` (MIT) behind the same
+  small interface. Verify `esp_rom_crc32_le` against the zlib CRC test vector.
 - [ ] **P1.3** – Python encoder `tools/etf/` (Pillow): resize, quantise, choose the smallest
   encoding automatically, CLI `etf encode <dir|images> -o face.etf --size 135x240`.
 - [ ] **P1.4** – Test images `test/images/` (solid, gradient, noise, >256 colours, 1px details,
@@ -204,6 +207,12 @@ SI HAI is not supported in v2. Each board without owner hardware is released as
 
 <!-- Newest first. Date – task ID – note (measurements, surprises, follow-ups). -->
 
+- 2026-11-26 – P1.1 – `docs/FORMAT_ETF.md` v1.0. Size estimate on the generated nixie face
+  (135×240, 10 glyphs, 830 colours in glyph 0): RAW565 633 KB, RLE565 525 KB, PAL8 (lossy)
+  321 KB, PAL8_RLE 303 KB, DEFLATE565 lossless 321/258/240/232 KB at window 512 B/1 KB/4 KB/
+  32 KB, DEFLATE_PAL8 220 KB. Byte-plane splitting made DEFLATE worse (275 KB). → D-020: add
+  DEFLATE encodings with 4 KB window, drop QOI. 4 MB variant storage (896 KB) holds ~3 nixie
+  sets; flat faces are much smaller.
 - 2026-11-26 – P0.7 – GitHub ruleset "main protection" active: PR required (0 approvals), required
   check `CI ok` (aggregate job over firmware, host tests, tools), no force-push / deletion, no
   bypass. CI container `espressif/idf:v6.1.1` is Ubuntu 24.04 → local WSL should use

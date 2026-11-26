@@ -10,7 +10,7 @@ When a decision changes, add a new entry and mark the old one superseded – do 
 | D-003 | Hardware selected at **runtime** via board profiles stored in NVS; no per-clock `#ifdef`s. Safe mode protects against a wrong profile. | accepted |
 | D-004 | Firmware images per **chip × flash size**: esp32-4MB, esp32-8MB, esp32-16MB, esp32s2-4MB, esp32s2-16MB, esp32s3-8MB, esp32c3-4MB. All ESP32 images use DIO flash mode (IPSTube requirement). | superseded by D-016 |
 | D-005 | OTA has priority over built-in clock faces: two app slots on every variant; faces are loaded dynamically, minimum one face + embedded fallback. Draft 4 MB layout below. | accepted |
-| D-006 | Own clock-face container `.etf` with pluggable encodings (RAW565, RLE565, PAL8_RLE, optional QOI). CLK format dropped; BMP/PNG/JPG only as import formats (browser / Python tool). | accepted |
+| D-006 | Own clock-face container `.etf` with pluggable encodings (RAW565, RLE565, PAL8_RLE, optional QOI). CLK format dropped; BMP/PNG/JPG only as import formats (browser / Python tool). | accepted; encoding list superseded by D-020 |
 | D-007 | No compile-time user config (`_USER_DEFINES.h` gone). All settings at runtime: web UI, REST, console, NVS with schema version. Kconfig only for developer options. | accepted |
 | D-008 | Control: REST API is the primary interface; MQTT only for Home Assistant. Dropped: WPS, plain MQTT/Smartnest. | accepted |
 | D-009 | Web UI: Preact + Vite + TypeScript, responsive, built in CI, served gzip-compressed from flash. PWA instead of a native mobile app. | accepted |
@@ -24,6 +24,7 @@ When a decision changes, add a new entry and mark the old one superseded – do 
 | D-017 | Partition table at **0x9000** (bootloader headroom: esp32 bootloader had only 0xAD0 bytes free below 0x8000). Final layouts in `partitions/{4,8,16}MB.csv`; NVS 16 KB. Fixes the D-005 draft, where `otadata` overlapped `ota_0`. Changing the offset later forces a full reflash, so it is fixed now. | accepted |
 | D-018 | v1 clock faces are **not** shipped: their origin is undocumented and the nixie set is very likely a stock photo (the same faces appear in all extracted vendor firmwares). Built-in faces are rendered procedurally by `tools/facegen` from geometry only; near-identical re-creations of existing images are not made (they would still be derivative works). | accepted |
 | D-019 | Generated clock-face images are released under **CC0-1.0** (public domain dedication), so anyone can reuse them. The generator code itself stays GPL-3.0-or-later. | accepted |
+| D-020 | `.etf` encodings: RAW565, RLE565, PAL8_RLE, **DEFLATE565**, **DEFLATE_PAL8** (raw DEFLATE, max distance 4 KB). Reason: on the photo-like nixie face RLE saves only 17 %, lossless DEFLATE 62 %; the inflater (`tinfl`) is in the ROM of all supported chips, RAM during decode ≈ 15 KB. QOI dropped. Pixel data stored big-endian (panel byte order). Spec: `docs/FORMAT_ETF.md`. | accepted |
 
 ## D-005 – draft partition layouts (to be validated in P0.3)
 
