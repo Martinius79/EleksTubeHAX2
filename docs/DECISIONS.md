@@ -22,6 +22,8 @@ When a decision changes, add a new entry and mark the old one superseded – do 
 | D-015 | SI HAI clock not supported in v2. | accepted |
 | D-016 | Firmware images per **chip × flash size**, defined in `variants/<variant>.sdkconfig`: esp32-4MB, esp32-8MB-dio, esp32-16MB, esp32s2-4MB, esp32s2-16MB, esp32s3-8MB, esp32c3-4MB. Default flash mode **QIO 80 MHz** (shielded modules). Only IPSTube Gen1 (`esp32-8MB-dio`, weak external flash) uses DIO 40 MHz; whether it can run faster is tested in P5.9. Board quirks never become the global default. | accepted |
 | D-017 | Partition table at **0x9000** (bootloader headroom: esp32 bootloader had only 0xAD0 bytes free below 0x8000). Final layouts in `partitions/{4,8,16}MB.csv`; NVS 16 KB. Fixes the D-005 draft, where `otadata` overlapped `ota_0`. Changing the offset later forces a full reflash, so it is fixed now. | accepted |
+| D-018 | v1 clock faces are **not** shipped: their origin is undocumented and the nixie set is very likely a stock photo (the same faces appear in all extracted vendor firmwares). Built-in faces are rendered procedurally by `tools/facegen` from geometry only; near-identical re-creations of existing images are not made (they would still be derivative works). | accepted |
+| D-019 | Licence for generated clock-face images (proposal: CC0-1.0 so anyone can reuse them; alternative CC-BY-4.0). The generator code itself is GPL-3.0-or-later. | open |
 
 ## D-005 – draft partition layouts (to be validated in P0.3)
 

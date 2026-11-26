@@ -45,5 +45,6 @@ source.
 
 ## Clock-face graphics
 
-Clock faces converted from v1 (`data/*.bmp`, `assets/other graphics`) come from various community
-sources; their origin and licence must be confirmed before they are shipped (see roadmap P1.6).
+v1 clock faces are not included: their origin is undocumented (D-018). Built-in faces are
+rendered by `tools/facegen` from geometry only and are original works of this project; their
+licence is decided in D-019.

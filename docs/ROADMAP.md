@@ -27,7 +27,7 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
   `managed_components/`, `sdkconfig`, `web/node_modules/`, `web/dist/`.
 - [x] **P0.5** – Licence & attribution: GPL-3.0 kept, `NOTICE.md` naming SmittyHalibut,
   aly-fly and all EleksTubeHAX contributors; SPDX headers in source files.
-- [ ] **P0.6** – `AGENTS.md` / contributor rules (language, git rules, build vs. flash policy).
+- [x] **P0.6** – `AGENTS.md` / contributor rules (language, git rules, build vs. flash policy).
 - [ ] **P0.7** – CI (GitHub Actions, `espressif/esp-idf-ci-action`): build matrix of all
   variants, host tests (P0.8), web UI build (P4.6). Artifacts per variant.
 - [ ] **P0.8** – Host test harness: components built for the `linux` target with Unity,
@@ -48,10 +48,15 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
   transparency) + golden outputs.
 - [ ] **P1.5** – Host tests: round trip encoder→decoder pixel-exact (lossless modes),
   corrupt/truncated file handling, size budget report per encoding.
-- [ ] **P1.6** – Convert the v1 clock faces (`data/*.bmp`) to `.etf` in both sizes; record
-  sizes per encoding in the progress log.
-  *Done when* all v1 faces fit and the smallest-encoding choice is documented, and the origin /
-  licence of each face set is confirmed (only cleared faces are shipped, see NOTICE.md).
+- [ ] **P1.6** – Encode the generated faces (P1.7) to `.etf` in both sizes (135×240, 80×160);
+  record sizes per encoding in the progress log. v1 faces are not shipped (D-018).
+  *Done when* the built-in faces fit and the smallest-encoding choice is documented.
+- [ ] **P1.7** – Clock-face generator `tools/facegen`: procedural styles rendered from geometry
+  only (no source images), parameters for colour, stroke width, size, digit shapes.
+  First style `nixie` (glowing wire, hex anode mesh, unlit cathodes) exists as prototype.
+  Next: more styles (7-segment, VFD, neon, flat/minimal), optional font-based digits (only fonts
+  with a free licence), direct `.etf` output, later the same generator in the web UI (P4.7).
+  Licence of generated images: D-019.
 
 ## Phase 2 – Board abstraction & display 🔌
 
@@ -199,6 +204,14 @@ SI HAI is not supported in v2. Each board without owner hardware is released as
 
 <!-- Newest first. Date – task ID – note (measurements, surprises, follow-ups). -->
 
+- 2026-11-26 – P1.7 (started) – v1 nixie face is very likely a stock photo (identical faces in all
+  vendor firmwares) → D-018: no v1 faces. Prototype `tools/facegen/nixie.py` renders an own
+  nixie set at 135×240 in <1 s (4× supersampling, layered Gaussian glow, red gas fill, hex mesh,
+  dim unlit cathodes). Python deps in `tools/requirements.txt`, local `.venv`.
+- 2026-11-26 – P0.6 – `AGENTS.md` adapted from v1: commit only on request and on feature
+  branches, build yes / flash only on request, no local values in tracked files (`.local/`),
+  weakest board never the baseline, roadmap/decision workflow. v1 fork/upstream rules dropped
+  (v2 is its own repository).
 - 2026-11-26 – P0.5 – `NOTICE.md` with origin projects and v1 contributors (from v1 git history
   and README §9), README with build + credits. Licence identifier `GPL-3.0-or-later` (v1 only
   ships the GPL-3.0 text, no "only/or later" statement). Origin/licence of the v1 clock-face
