@@ -422,13 +422,13 @@ size_t etf_dec_work_size(const etf_glyph_t *glyph)
     if (is_deflate(glyph->encoding)) {
         size += align8(sizeof(tinfl_decompressor)) + ETF_DEFLATE_DICT;
     }
-    return size;
+    return size + 7; // slack: etf_dec_begin() aligns the buffer itself
 }
 
 esp_err_t etf_dec_begin(etf_dec_t *dec, const etf_face_t *face, const etf_glyph_t *glyph,
                         void *work, size_t work_size)
 {
-    if (!dec || !face || !glyph || !work || ((uintptr_t)work & 7)) {
+    if (!dec || !face || !glyph || !work) {
         return ESP_ERR_INVALID_ARG;
     }
     if (glyph->encoding > ETF_ENC_DEFLATE_PAL8) {
@@ -440,7 +440,7 @@ esp_err_t etf_dec_begin(etf_dec_t *dec, const etf_face_t *face, const etf_glyph_
     memset(dec, 0, sizeof(*dec));
     dec->face = face;
     dec->glyph = glyph;
-    uint8_t *p = work;
+    uint8_t *p = (uint8_t *)(((uintptr_t)work + 7) & ~(uintptr_t)7);
     dec->in_buf = p;
     p += align8(IN_BUF_SIZE);
     if (is_palette(glyph->encoding)) {

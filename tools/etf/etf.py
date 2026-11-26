@@ -333,6 +333,22 @@ def render_canvas(face: Face, g: Glyph) -> np.ndarray:
     return canvas
 
 
+def face_digest(buf: bytes) -> tuple:
+    """Outcome and decoded content of an .etf file, independent of the DEFLATE byte stream
+    (which differs between zlib implementations, e.g. zlib-ng in CPython on Windows)."""
+    try:
+        face = read_face(buf)
+    except EtfError as ex:
+        try:
+            read_face(buf, verify_crc=False)
+            return ("crc_error",)
+        except EtfError:
+            return ("error", str(ex).split(":")[0])
+    return ("ok", face.canvas_w, face.canvas_h, tuple(sorted(face.meta.items())), tuple(
+        (g.code, g.x, g.y, g.w, g.h, g.encoding, g.flags, g.key_color, g.bg_color,
+         g.pixels.tobytes()) for g in face.glyphs))
+
+
 # --- image preparation -----------------------------------------------------------------------
 
 

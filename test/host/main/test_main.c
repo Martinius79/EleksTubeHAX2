@@ -15,5 +15,6 @@ void app_main(void)
     UNITY_BEGIN();
     run_smoke_tests();
     run_etf_tests();
+    run_faces_tests();
     exit(UNITY_END());
 }

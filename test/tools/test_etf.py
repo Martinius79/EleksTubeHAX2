@@ -271,23 +271,8 @@ class Fixtures(unittest.TestCase):
                 # must match exactly.
                 self.assertTrue(name.endswith(".etf"),
                                 f"{name} outdated - run test/host/fixtures/generate.py")
-                self.assertEqual(self._digest(new), self._digest(old),
+                self.assertEqual(etf.face_digest(new), etf.face_digest(old),
                                  f"{name} outdated - run test/host/fixtures/generate.py")
-
-    @staticmethod
-    def _digest(buf: bytes):
-        """Outcome and decoded pixels of an .etf file, independent of the DEFLATE byte stream."""
-        try:
-            face = etf.read_face(buf)
-        except etf.EtfError as ex:
-            try:
-                face = etf.read_face(buf, verify_crc=False)
-                return ("crc_error",)
-            except etf.EtfError:
-                return ("error", str(ex).split(":")[0])
-        return ("ok", face.canvas_w, face.canvas_h, tuple(
-            (g.code, g.x, g.y, g.w, g.h, g.encoding, g.bg_color, g.pixels.tobytes())
-            for g in face.glyphs))
 
     def test_python_reference_agrees_with_manifest(self):
         for line in (self.DIR / "manifest.txt").read_text(encoding="utf-8").splitlines():

@@ -5,3 +5,4 @@
 
 void run_smoke_tests(void);
 void run_etf_tests(void);
+void run_faces_tests(void);

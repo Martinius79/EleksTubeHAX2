@@ -25,6 +25,7 @@ When a decision changes, add a new entry and mark the old one superseded – do 
 | D-018 | v1 clock faces are **not** shipped: their origin is undocumented and the nixie set is very likely a stock photo (the same faces appear in all extracted vendor firmwares). Built-in faces are rendered procedurally by `tools/facegen` from geometry only; near-identical re-creations of existing images are not made (they would still be derivative works). | accepted |
 | D-019 | Generated clock-face images are released under **CC0-1.0** (public domain dedication), so anyone can reuse them. The generator code itself stays GPL-3.0-or-later. | accepted |
 | D-020 | `.etf` encodings: RAW565, RLE565, PAL8_RLE, **DEFLATE565**, **DEFLATE_PAL8** (raw DEFLATE, max distance 4 KB). Reason: on the photo-like nixie face RLE saves only 17 %, lossless DEFLATE 62 %; the inflater (`tinfl`) is in the ROM of all supported chips, RAM during decode ≈ 15 KB. QOI dropped. Pixel data stored big-endian (panel byte order). Spec: `docs/FORMAT_ETF.md`. | accepted |
+| D-021 | Built-in faces: the small flat face `minimal` (16 KB at 135×240, 11 KB at 80×160) is **embedded in the app** in both sizes as fallback (`components/faces`), because one image variant serves boards with both display sizes. Larger faces such as `nixie-glow` (252 KB / 125 KB) are delivered on the storage partition (P4.8), not in the app. The firmware verifies the embedded faces at boot. | accepted |
 
 ## D-005 – draft partition layouts (to be validated in P0.3)
 

@@ -5,7 +5,7 @@
 //   etf_source_t src;  etf_source_from_memory(&src, data, size);   // or etf_source_from_file()
 //   etf_face_t face;   etf_open(&face, &src);
 //   const etf_glyph_t *g = etf_find(&face, '7');
-//   void *work = malloc(etf_dec_work_size(g));                      // ~15 KB for DEFLATE glyphs
+//   void *work = malloc(etf_dec_work_size(g));                      // ~16 KB for DEFLATE glyphs
 //   etf_dec_t dec;     etf_dec_begin(&dec, &face, g, work, etf_dec_work_size(g));
 //   for (y = 0; y < g->h; y++) etf_dec_row(&dec, row);              // row: g->w * 2 bytes
 //   etf_close(&face);
@@ -125,7 +125,7 @@ esp_err_t etf_meta_get(const etf_face_t *face, const char *key, char *out, size_
 
 // --- decoding --------------------------------------------------------------------------------
 
-/** Work buffer size etf_dec_begin() needs for this glyph (8-byte aligned buffer). */
+/** Work buffer size etf_dec_begin() needs for this glyph (any alignment, e.g. plain malloc). */
 size_t etf_dec_work_size(const etf_glyph_t *glyph);
 
 esp_err_t etf_dec_begin(etf_dec_t *dec, const etf_face_t *face, const etf_glyph_t *glyph,

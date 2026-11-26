@@ -39,7 +39,7 @@ static esp_err_t render_glyph(const etf_face_t *face, const etf_glyph_t *g, uint
         canvas[2 * i + 1] = g->bg_color & 0xFF;
     }
     size_t work_size = etf_dec_work_size(g);
-    void *work = aligned_alloc(8, (work_size + 7) & ~(size_t)7);
+    void *work = malloc(work_size);
     uint8_t *row = malloc((size_t)g->w * 2);
     TEST_ASSERT_NOT_NULL(work);
     TEST_ASSERT_NOT_NULL(row);
@@ -213,10 +213,10 @@ static void test_api_misuse(void)
 
     uint64_t *work = calloc(need / 8 + 2, 8);
     etf_dec_t dec;
-    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_SIZE, etf_dec_begin(&dec, &face, g, work, need - 8));
-    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG,
-                      etf_dec_begin(&dec, &face, g, (uint8_t *)work + 1, need));
-    TEST_ASSERT_EQUAL(ESP_OK, etf_dec_begin(&dec, &face, g, work, need));
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_SIZE, etf_dec_begin(&dec, &face, g, work, need - 1));
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, etf_dec_begin(&dec, &face, g, NULL, need));
+    // any alignment works: the decoder aligns the buffer itself
+    TEST_ASSERT_EQUAL(ESP_OK, etf_dec_begin(&dec, &face, g, (uint8_t *)work + 1, need));
     uint8_t row[2 * 64];
     for (uint16_t y = 0; y < g->h; y++) {
         TEST_ASSERT_EQUAL(ESP_OK, etf_dec_row(&dec, row));

@@ -53,12 +53,13 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
   (`HAS_KEY`) is specified but not yet produced by the encoder.
 - [x] **P1.5** – Host tests: round trip encoder→decoder pixel-exact (lossless modes),
   corrupt/truncated file handling, size budget report per encoding.
-- [ ] **P1.6** – Encode the generated faces (P1.7) to `.etf` in both sizes (135×240, 80×160);
+- [x] **P1.6** – Encode the generated faces (P1.7) to `.etf` in both sizes (135×240, 80×160);
   record sizes per encoding in the progress log. v1 faces are not shipped (D-018).
   *Done when* the built-in faces fit and the smallest-encoding choice is documented.
 - [ ] **P1.7** – Clock-face generator `tools/facegen`: procedural styles rendered from geometry
   only (no source images), parameters for colour, stroke width, size, digit shapes.
-  First style `nixie` (glowing wire, hex anode mesh, unlit cathodes) exists as prototype.
+  Styles `nixie` (glowing wire, hex anode mesh, unlit cathodes) and `minimal` (flat amber,
+  embedded fallback) exist; `facegen.py build` renders and encodes all built-in faces.
   Next: more styles (7-segment, VFD, neon, flat/minimal), optional font-based digits (only fonts
   with a free licence), direct `.etf` output, later the same generator in the web UI (P4.7).
   Generated images are CC0-1.0 (D-019).
@@ -122,7 +123,8 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
   output differs between zlib implementations), validated against `test/host/fixtures` in CI,
   preview, upload.
 - [ ] **P4.8** – Face storage management on LittleFS: quota, delete, at least one face always
-  present (built-in fallback face embedded in the app).
+  present (fallback `minimal` is already embedded, D-021); ship `nixie-glow` in the initial
+  storage image.
 - [ ] **P4.9** – Timezone: picker in the web UI + optional one-shot/weekly IP geolocation
   (ip-api.com, returns IANA name).
 
@@ -211,6 +213,21 @@ SI HAI is not supported in v2. Each board without owner hardware is released as
 
 <!-- Newest first. Date – task ID – note (measurements, surprises, follow-ups). -->
 
+- 2026-11-26 – P1.6 – Built-in faces (11 glyphs: 0–9 + blank), totals per encoding:
+
+  | Face | Size | RAW565 | RLE565 | PAL8_RLE | DEFLATE565 | DEFLATE_PAL8 | .etf |
+  |---|---|---|---|---|---|---|---|
+  | nixie-glow | 135×240 | 680 KB | 520 KB | n/a | 254 KB | n/a | **252 KB** |
+  | nixie-glow | 80×160 | 270 KB | 239 KB | n/a | 126 KB | n/a | **125 KB** |
+  | minimal | 135×240 | 398 KB | 52 KB | 34 KB | 21 KB | 16 KB | **16 KB** |
+  | minimal | 80×160 | 168 KB | 36 KB | 23 KB | 13 KB | 10 KB | **11 KB** |
+
+  Smallest encoding: DEFLATE565 for photo-like faces, DEFLATE_PAL8 for flat faces (anti-aliased
+  edges of one hue stay below 256 colours). `minimal` embedded as fallback (D-021, app +30 KB);
+  `app_main` verifies and decodes it at boot and logs timing. `tinfl_decompress` links from ROM
+  on esp32 (0x4005ef30) and esp32c3 (0x400000f4). etf API: work buffer no longer needs 8-byte
+  alignment (decoder aligns itself). Digit 5 stem now runs straight into the bowl (kink visible
+  with thick strokes).
 - 2026-11-26 – P1.2 – `components/etf`: parser + streaming row decoder for all 5 encodings,
   memory and FILE sources, work buffer 256 B (+512 B palette, +~11 KB tinfl state + 4 KB dict
   for DEFLATE). Host build uses miniz 1.14 `tinfl` (public domain) against the ROM header; that

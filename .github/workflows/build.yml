@@ -113,12 +113,11 @@ jobs:
         run: python -m compileall -q tools
       - name: Python unit tests
         run: python -m unittest discover -s test/tools -v
-      - name: Render and encode nixie faces (135x240, 80x160)
+      - name: Build all built-in faces (.etf + size report)
         run: |
-          for s in 135x240 80x160; do
-            python tools/facegen/nixie.py -o out/faces/nixie-$s --size $s --montage
-            python tools/etf/etf.py encode out/faces/nixie-$s -o out/faces/nixie-glow_$s.etf \
-              --name "Nixie Glow" --author "EleksTubeHAX2 facegen" --license CC0-1.0
+          python tools/facegen/facegen.py build -o out/faces | tee -a "$GITHUB_STEP_SUMMARY"
+          for style in nixie minimal; do
+            python tools/facegen/facegen.py render $style -o out/faces/preview-$style --montage
           done
       - uses: actions/upload-artifact@v7
         with:
