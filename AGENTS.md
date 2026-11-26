@@ -41,7 +41,11 @@ decisions: [docs/DECISIONS.md](docs/DECISIONS.md), attribution: [NOTICE.md](NOTI
   wipes settings, clock faces and any backup on the clock.
 - After a change, build the affected variant(s). A full `--all` build takes ~15 min; CI builds
   every variant (P0.7).
-- Host tests (P0.8, once available) must pass before committing logic changes.
+- Tests must pass before committing logic changes. On Windows run everything in WSL
+  (Ubuntu 24.04 = CI container base): `wsl -d Ubuntu-24.04 -- bash tools/wsl_test.sh` mirrors
+  the working tree to the Linux file system and runs the Python tool tests and the host tests
+  (~10 s incremental). On Linux/macOS: `python tools/host_test.py` and
+  `python -m unittest discover -s test/tools`.
 - After changing `sdkconfig.defaults*` or `variants/*.sdkconfig`, rebuild with `--clean`.
 - Python tools use a local venv: `python -m venv .venv` and
   `.venv/Scripts/pip install -r tools/requirements.txt` (Linux/macOS: `.venv/bin/pip`).

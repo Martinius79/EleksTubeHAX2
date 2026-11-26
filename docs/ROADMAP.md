@@ -32,7 +32,7 @@ Tasks marked 🔌 need physical hardware; everything else can be done without a 
   variants, host tests (P0.8), web UI build (P4.6). Artifacts per variant.
 - [x] **P0.8** – Host test harness: components built for the `linux` target with Unity,
   run by `idf.py --preview set-target linux` + `ctest`/test runner in CI.
-  *Done when* one dummy test runs locally and in CI. (CI: done; local needs Linux/WSL, see log.)
+  *Done when* one dummy test runs locally and in CI. (Local: WSL via `tools/wsl_test.sh`.)
 - [x] **P0.9** – Coding style: `.clang-format`, `.editorconfig`; naming conventions in AGENTS.md.
 
 ## Phase 1 – Clock-face image format (`.etf`) 
@@ -209,6 +209,11 @@ SI HAI is not supported in v2. Each board without owner hardware is released as
 
 <!-- Newest first. Date – task ID – note (measurements, surprises, follow-ups). -->
 
+- 2026-11-26 – P0.8 – Local tests via WSL Ubuntu 24.04 (same base as the CI container) with
+  ESP-IDF v6.1.1 in `~/esp/esp-idf`. `tools/wsl_test.sh` rsyncs the Windows working tree to
+  `~/dev/EleksTubeHAX2` and runs Python + host tests: first run 23 s, incremental 9 s (Python
+  tests 5.8 s vs. 15 s on native Windows). The ESP-IDF clone needed `http.version=HTTP/1.1`
+  after an HTTP/2 stream abort.
 - 2026-11-26 – P1.3–P1.5 – `tools/etf/etf.py` (encode/info/decode + reference decoder), 15 unit
   tests in `test/tools` (round trip per encoding, RLE row boundaries, 4 KB DEFLATE window, byte
   order, truncation, bit flips, fuzzed pixel streams; ~15 s). Tests found three spec/impl gaps:
