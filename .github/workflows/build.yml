@@ -82,7 +82,7 @@ jobs:
             build/${{ matrix.variant }}/flash_args
 
   python-tools:
-    name: Python tools
+    name: Tools & style
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -92,6 +92,10 @@ jobs:
           cache: pip
           cache-dependency-path: tools/requirements.txt
       - run: pip install -r tools/requirements.txt
+      - name: clang-format check
+        run: |
+          files=$(git ls-files '*.c' '*.h' '*.cpp' '*.hpp')
+          [ -z "$files" ] || clang-format --dry-run -Werror $files
       - name: Compile check
         run: python -m compileall -q tools
       - name: Render nixie faces (135x240, 80x160)

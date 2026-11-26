@@ -69,7 +69,16 @@ decisions: [docs/DECISIONS.md](docs/DECISIONS.md), attribution: [NOTICE.md](NOTI
 - Line endings: LF; CRLF only for `*.cmd`, `*.bat`, `*.ps1` (see `.gitattributes`).
 - Every source file starts with `SPDX-License-Identifier: GPL-3.0-or-later`.
 - No wholesale reformatting, unrelated refactors or renames inside a change.
-- Formatting and naming rules follow with P0.9 (`.clang-format`, `.editorconfig`).
+- C formatting: `.clang-format` (4 spaces, 100 columns, function braces on their own line),
+  checked in CI with the pinned `clang-format` from `tools/requirements.txt`
+  (`.venv/Scripts/clang-format -i <files>`). Editor basics: `.editorconfig`.
+- Naming (C): `snake_case` for functions and variables, prefixed with the component name
+  (`etf_decode_line`, `board_get_profile`); types `snake_case_t`; macros and enum values
+  `UPPER_CASE` with component prefix (`ETF_ENC_RLE565`); `static` for everything file-local;
+  log tag `static const char *TAG = "<component>";`.
+- Errors: public functions return `esp_err_t`; use `ESP_RETURN_ON_ERROR` / `ESP_GOTO_ON_ERROR`
+  instead of `ESP_ERROR_CHECK` outside of `app_main` init.
+- Python: PEP 8, 100 columns, type hints for public functions.
 
 ## Files agents should not open
 

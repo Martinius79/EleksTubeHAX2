@@ -13,6 +13,6 @@ void app_main(void)
     esp_chip_info_t chip;
     esp_chip_info(&chip);
 
-    ESP_LOGI(TAG, "EleksTubeHAX2 %s (IDF %s), chip model %d rev %d, %d core(s)",
-             app->version, app->idf_ver, chip.model, chip.revision, chip.cores);
+    ESP_LOGI(TAG, "EleksTubeHAX2 %s (IDF %s), chip model %d rev %d, %d core(s)", app->version,
+             app->idf_ver, chip.model, chip.revision, chip.cores);
 }
