@@ -117,7 +117,8 @@ jobs:
         run: |
           for s in 135x240 80x160; do
             python tools/facegen/nixie.py -o out/faces/nixie-$s --size $s --montage
-            python tools/etf/etf.py encode out/faces/nixie-$s -o out/faces/nixie-glow_$s.etf \n              --name "Nixie Glow" --author "EleksTubeHAX2 facegen" --license CC0-1.0
+            python tools/etf/etf.py encode out/faces/nixie-$s -o out/faces/nixie-glow_$s.etf \
+              --name "Nixie Glow" --author "EleksTubeHAX2 facegen" --license CC0-1.0
           done
       - uses: actions/upload-artifact@v7
         with:
