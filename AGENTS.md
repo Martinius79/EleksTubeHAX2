@@ -11,8 +11,9 @@ decisions: [docs/DECISIONS.md](docs/DECISIONS.md), attribution: [NOTICE.md](NOTI
 
 ## Git
 
-- **`main` is protected:** it only receives pull requests that the user merges. Never commit,
-  push or merge to `main` yourself.
+- **`main` is protected** by the GitHub ruleset "main protection" (PR required, required check
+  `CI ok`, no force-push, no deletion). It only receives pull requests that the user merges.
+  Never commit, push or merge to `main` yourself. Renaming the `CI ok` job breaks the ruleset.
 - **Feature branches** (`feature/<topic>`, `fix/<topic>`): committing and pushing there is
   allowed without asking. Check `git branch --show-current` and `git status` before every
   commit. Opening a PR is fine; merging is the user's decision.

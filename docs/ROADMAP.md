@@ -204,6 +204,10 @@ SI HAI is not supported in v2. Each board without owner hardware is released as
 
 <!-- Newest first. Date – task ID – note (measurements, surprises, follow-ups). -->
 
+- 2026-11-26 – P0.7 – GitHub ruleset "main protection" active: PR required (0 approvals), required
+  check `CI ok` (aggregate job over firmware, host tests, tools), no force-push / deletion, no
+  bypass. CI container `espressif/idf:v6.1.1` is Ubuntu 24.04 → local WSL should use
+  Ubuntu 24.04 for comparable host tests. Work continues on `feature/phase1-etf`.
 - 2026-11-26 – P0.7/P0.8/P0.9 – CI green: 7 variants in the `espressif/idf:v6.1.1` container
   (~2.5 min each, parallel), artifacts with merged binary per variant, host tests, clang-format
   check (pinned 21.1.8 via pip), nixie faces as artifact. The ESP-IDF `linux` target is still
