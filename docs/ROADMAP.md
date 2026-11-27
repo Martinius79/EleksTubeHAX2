@@ -213,6 +213,13 @@ SI HAI is not supported in v2. Each board without owner hardware is released as
 
 <!-- Newest first. Date – task ID – note (measurements, surprises, follow-ups). -->
 
+- 2026-11-27 – P1.7 (round 1) – Presets + `--set key=value` overrides; new styles `sevenseg`
+  (LED, LCD), `vfd`, `varisymbol` (14-segment gas discharge in the manner of the Telefunken
+  Varisymbol: frame with unsplit top/bottom, centre cross, four diagonals; digit mapping taken
+  from reference pictures, rendering original), `neon` (tube with electrodes at open ends only,
+  shadow on a textured wall). Sizes at 135×240: minimal 16 KB, LCD 18 KB, 7-seg LED 52–68 KB,
+  varisymbol 92 KB, VFD 108 KB, neon 116 KB, nixie 252 KB. Next: nixie realism, round
+  IN-14-style tube and a Soviet-style glyph set (5 = rotated 2).
 - 2026-11-26 – P2.4 – `components/display`: SPI via `esp_lcd_panel_io` without hardware CS
   (6 panels exceed the CS lines of the SPI peripheral; the other clocks use 74HC595 / I2C
   expanders anyway), CS backend `gpio` (hc595 / i2c expander → Phase 7), own ST7789 init

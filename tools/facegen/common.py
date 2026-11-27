@@ -110,3 +110,44 @@ def col(rgb):
 def to_image(img: np.ndarray) -> Image.Image:
     """Float RGB array in [0, 1] -> 8-bit PIL image."""
     return Image.fromarray(np.clip(img * 255 + 0.5, 0, 255).astype(np.uint8), "RGB")
+
+
+def polygon_mask(size, polygons) -> np.ndarray:
+    """Anti-aliased mask of filled polygons given in final pixel coordinates."""
+    w, h = size
+    im = Image.new("L", (w * SS, h * SS), 0)
+    dr = ImageDraw.Draw(im)
+    for pts in polygons:
+        dr.polygon([(x * SS, y * SS) for x, y in pts], fill=255)
+    return downsample(im, size)
+
+
+def parse_color(value) -> tuple[int, int, int]:
+    """'#rrggbb', 'rrggbb' or an (r, g, b) tuple -> (r, g, b)."""
+    if isinstance(value, (tuple, list)):
+        r, g, b = (int(c) for c in value)
+    else:
+        v = str(value).lstrip("#")
+        if len(v) != 6:
+            raise ValueError(f"colour must be #rrggbb, got {value!r}")
+        r, g, b = (int(v[i:i + 2], 16) for i in (0, 2, 4))
+    return r, g, b
+
+
+def glow(mask: np.ndarray, s: float, color, strength: float = 1.0,
+         core=(255, 240, 220)) -> np.ndarray:
+    """Light emitted by a lit mask: white-hot core, coloured near and far glow (linear RGB)."""
+    near = blur(mask, 1.8 * s)
+    far = blur(mask, 7.0 * s)
+    wide = blur(mask, 22.0 * s)
+    c = col(color)
+    img = wide[..., None] * c * 0.9 * strength
+    img = img + far[..., None] * c * 1.5 * strength
+    img = img + near[..., None] * c * 2.0
+    img = img + mask[..., None] * (c * 0.6 + col(core) * 0.9)
+    return img
+
+
+def tonemap(img: np.ndarray, exposure: float = 1.4) -> np.ndarray:
+    """Soft saturation instead of hard clipping for additive light."""
+    return 1 - np.exp(-img * exposure)

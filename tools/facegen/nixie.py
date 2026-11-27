@@ -15,8 +15,20 @@ import math
 import numpy as np
 from PIL import Image, ImageDraw
 
-from common import (SS, blur, col, digit_strokes, dot_mask, downsample, rect_mask, stroke_mask,
-                    to_image)
+from common import (SS, blur, col, digit_strokes, dot_mask, downsample, parse_color, rect_mask,
+                    stroke_mask, to_image)
+
+NAME = "nixie"
+PARAMS = {
+    "gas": (135, 8, 2),  # neon gas fill of the tube
+    "mesh": (205, 42, 20),  # anode mesh lit by the discharge
+    "cathodes": (150, 70, 105),  # unlit cathodes behind the lit one
+    "ambient": (180, 12, 0),  # wide glow
+    "far": (250, 35, 5),  # mid glow
+    "near": (255, 85, 15),  # glow close to the wire
+    "core": (255, 210, 145),  # the wire itself
+    "leads": (170, 120, 255),  # violet glow points at the cathode lead-ins
+}
 
 
 def hex_mesh(size, cell, line, region):
@@ -36,8 +48,9 @@ def hex_mesh(size, cell, line, region):
     return downsample(im, size) * rect_mask(size, region, 6)
 
 
-def render(d: int | None, size=(135, 240)) -> Image.Image:
+def render(d: int | None, size=(135, 240), **params) -> Image.Image:
     """Digit d lit, or d=None for a blank (unlit) tube."""
+    prm = {k: parse_color(v) for k, v in {**PARAMS, **params}.items()}
     w, h = size
     s = w / 135.0                                     # scale relative to the reference size
     tube = (4 * s, 6 * s, w - 4 * s, h - 6 * s)
@@ -68,12 +81,12 @@ def render(d: int | None, size=(135, 240)) -> Image.Image:
 
     # neon gas fill: the whole tube interior is washed in red light
     interior = rect_mask(size, inner, 6 * s)
-    img += (interior * (0.30 + 9.0 * flood))[..., None] * col((135, 8, 2))
+    img += (interior * (0.30 + 9.0 * flood))[..., None] * col(prm["gas"])
 
     # anode mesh, lit by the digit
     mesh = hex_mesh(size, 4.2 * s, 0.7 * s, inner)
     mesh_light = 0.35 + 8.0 * flood + 3.0 * ambient + 3.0 * glow_far
-    img += (mesh * np.clip(mesh_light, 0, 2.2))[..., None] * col((205, 42, 20))
+    img += (mesh * np.clip(mesh_light, 0, 2.2))[..., None] * col(prm["mesh"])
 
     # unlit cathodes stacked behind, slightly offset, dim and lit by the active digit
     for k in range(10):
@@ -82,18 +95,18 @@ def render(d: int | None, size=(135, 240)) -> Image.Image:
         off = ((k % 3) - 1) * 0.8 * s
         b = (box[0] + off, box[1] + off * 0.5, box[2] + off, box[3] + off * 0.5)
         m = stroke_mask(size, digit_strokes(k), b, 0.8 * s)
-        img += (m * (0.15 + 4.0 * flood + 1.5 * ambient))[..., None] * col((150, 70, 105))
+        img += (m * (0.15 + 4.0 * flood + 1.5 * ambient))[..., None] * col(prm["cathodes"])
 
     # warm orange discharge glow around the lit wire
-    img += ambient[..., None] * col((180, 12, 0)) * 1.0
-    img += glow_far[..., None] * col((250, 35, 5)) * 1.8
-    img += glow_near[..., None] * col((255, 85, 15)) * 2.4
-    img += lit[..., None] * col((255, 210, 145)) * 1.7
+    img += ambient[..., None] * col(prm["ambient"]) * 1.0
+    img += glow_far[..., None] * col(prm["far"]) * 1.8
+    img += glow_near[..., None] * col(prm["near"]) * 2.4
+    img += lit[..., None] * col(prm["core"]) * 1.7
 
     # cathode lead-ins: small violet glow points top and bottom
     for y in (box[1] - 7 * s, box[3] + 7 * s):
         p = dot_mask(size, w / 2, y, 1.6 * s)
-        img += blur(p, 1.5 * s)[..., None] * col((170, 120, 255)) * 2.5
+        img += blur(p, 1.5 * s)[..., None] * col(prm["leads"]) * 2.5
         img += p[..., None] * col((230, 210, 255))
 
     img = 1 - np.exp(-img * 1.4)                      # soft tone mapping, no hard clipping

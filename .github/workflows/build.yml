@@ -116,8 +116,8 @@ jobs:
       - name: Build all built-in faces (.etf + size report)
         run: |
           python tools/facegen/facegen.py build -o out/faces | tee -a "$GITHUB_STEP_SUMMARY"
-          for style in nixie minimal; do
-            python tools/facegen/facegen.py render $style -o out/faces/preview-$style --montage
+          for preset in $(python -c "import sys; sys.path.insert(0, 'tools/facegen'); import facegen; print(' '.join(facegen.PRESETS))"); do
+            python tools/facegen/facegen.py render $preset -o out/faces/preview-$preset --montage
           done
       - uses: actions/upload-artifact@v7
         with:
