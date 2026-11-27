@@ -28,6 +28,9 @@ PARAMS = {
     "near": (255, 85, 15),  # glow close to the wire
     "core": (255, 210, 145),  # the wire itself
     "leads": (170, 120, 255),  # violet glow points at the cathode lead-ins
+    "rods": (120, 96, 88),  # support rods
+    "reflection": 0.22,  # highlights on the glass
+    "depth": 0.6,  # blur of the cathodes behind the lit one (px at 135 wide)
 }
 
 
@@ -50,7 +53,8 @@ def hex_mesh(size, cell, line, region):
 
 def render(d: int | None, size=(135, 240), **params) -> Image.Image:
     """Digit d lit, or d=None for a blank (unlit) tube."""
-    prm = {k: parse_color(v) for k, v in {**PARAMS, **params}.items()}
+    prm = {k: parse_color(v) if isinstance(PARAMS[k], tuple) else v
+           for k, v in {**PARAMS, **params}.items()}
     w, h = size
     s = w / 135.0                                     # scale relative to the reference size
     tube = (4 * s, 6 * s, w - 4 * s, h - 6 * s)
@@ -95,7 +99,16 @@ def render(d: int | None, size=(135, 240), **params) -> Image.Image:
         off = ((k % 3) - 1) * 0.8 * s
         b = (box[0] + off, box[1] + off * 0.5, box[2] + off, box[3] + off * 0.5)
         m = stroke_mask(size, digit_strokes(k), b, 0.8 * s)
+        if prm["depth"] > 0:
+            m = blur(m, prm["depth"] * s)  # behind the lit cathode: slightly out of focus
         img += (m * (0.15 + 4.0 * flood + 1.5 * ambient))[..., None] * col(prm["cathodes"])
+
+    # support rods between the mica plates, lit by the discharge
+    rods = np.zeros((h, w), np.float32)
+    for x in (inner[0] + 3 * s, inner[2] - 3 * s):
+        rods = np.maximum(rods, rect_mask(size, (x - 0.8 * s, tube[1] + 12 * s, x + 0.8 * s,
+                                                 tube[3] - 12 * s), 0.5 * s))
+    img += (rods * (0.25 + 5.0 * flood + 1.5 * ambient))[..., None] * col(prm["rods"])
 
     # warm orange discharge glow around the lit wire
     img += ambient[..., None] * col(prm["ambient"]) * 1.0
@@ -108,6 +121,14 @@ def render(d: int | None, size=(135, 240), **params) -> Image.Image:
         p = dot_mask(size, w / 2, y, 1.6 * s)
         img += blur(p, 1.5 * s)[..., None] * col(prm["leads"]) * 2.5
         img += p[..., None] * col((230, 210, 255))
+
+    # glass highlights: a vertical streak on the left, a short one on the right shoulder
+    if prm["reflection"] > 0:
+        streak = blur(rect_mask(size, (tube[0] + 6 * s, tube[1] + 16 * s, tube[0] + 8.5 * s,
+                                       tube[3] - 20 * s), 1.2 * s), 1.0 * s)
+        streak += 0.6 * blur(rect_mask(size, (tube[2] - 9 * s, tube[1] + 14 * s, tube[2] - 7.5 * s,
+                                              tube[1] + 60 * s), 0.8 * s), 0.8 * s)
+        img += (streak * prm["reflection"])[..., None] * col((240, 235, 245))
 
     img = 1 - np.exp(-img * 1.4)                      # soft tone mapping, no hard clipping
     return to_image(img)

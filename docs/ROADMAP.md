@@ -213,6 +213,13 @@ SI HAI is not supported in v2. Each board without owner hardware is released as
 
 <!-- Newest first. Date – task ID – note (measurements, surprises, follow-ups). -->
 
+- 2026-11-27 – P1.7 (round 2) – Style `in14`: round tube seen from the front (glass with
+  shoulder and exhaust tip, mica disc, support rods, coarse honeycomb anode in front of the
+  digit, broad red-orange glow without white core, pins, optional underlight – preset
+  `in14-violet` after a photo of a real IN-14 clock). Soviet glyph set: flat-top 3, 5 as an
+  upside-down 2 and 9 as an upside-down 6 like the real tube (`soviet_5=false` for a normal 5).
+  Nixie: support rods, out-of-focus cathode stack, glass highlights. Sizes at 135×240: in14
+  164 KB, in14-violet 184 KB, nixie-glow 262 KB.
 - 2026-11-27 – P1.7 (round 1) – Presets + `--set key=value` overrides; new styles `sevenseg`
   (LED, LCD), `vfd`, `varisymbol` (14-segment gas discharge in the manner of the Telefunken
   Varisymbol: frame with unsplit top/bottom, centre cross, four diagonals; digit mapping taken

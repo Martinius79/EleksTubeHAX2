@@ -23,6 +23,7 @@ from pathlib import Path
 
 from PIL import Image
 
+import in14
 import minimal
 import neon
 import nixie
@@ -35,7 +36,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools" / "etf"))
 import etf  # noqa: E402
 
-STYLES = {m.NAME: m for m in (minimal, nixie, sevenseg, vfd, varisymbol, neon)}
+STYLES = {m.NAME: m for m in (minimal, nixie, in14, sevenseg, vfd, varisymbol, neon)}
 SIZES = [(135, 240), (80, 160)]
 FALLBACK_DIR = ROOT / "components" / "faces"
 FALLBACK_FACE = "minimal"
@@ -47,6 +48,8 @@ PRESETS: dict[str, tuple[str, dict, str]] = {
     "minimal-paper": ("minimal", {"color": "#202020", "background": "#e8e4d8", "stroke": 9.0},
                       "Minimal Paper"),
     "nixie-glow": ("nixie", {}, "Nixie Glow"),
+    "in14": ("in14", {}, "IN-14 Tube"),
+    "in14-violet": ("in14", {"base_glow": 0.9}, "IN-14 Tube Violet Base"),
     "seg7-red": ("sevenseg", {}, "7-Segment Red"),
     "seg7-green": ("sevenseg", {"color": "#30ff50"}, "7-Segment Green"),
     "seg7-lcd": ("sevenseg", {"lcd": True, "color": "#1c201c", "background": "#b4bca8",

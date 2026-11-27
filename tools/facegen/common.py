@@ -55,6 +55,36 @@ def digit_strokes(d: int) -> list[list[tuple[float, float]]]:
     raise ValueError(d)
 
 
+def _rot180(strokes):
+    return [[(1 - u, 1 - v) for u, v in st] for st in strokes]
+
+
+def soviet_digit_strokes(d: int) -> list[list[tuple[float, float]]]:
+    """Digit shapes in the manner of Soviet nixie tubes (IN-14 family): flat-topped 3, and the
+    tube's economy of reusing cathode shapes - 5 is an upside-down 2, 9 an upside-down 6."""
+    if d == 0:
+        return [arc(0.5, 0.5, 0.5, 0.5, 0, 360)]
+    if d == 1:
+        return [[(0.30, 0.14), (0.58, 0.0), (0.58, 1.0)]]
+    if d == 2:
+        return [arc(0.5, 0.26, 0.48, 0.26, 190, 360 + 35) + [(0.02, 1.0), (1.0, 1.0)]]
+    if d == 3:
+        return [[(0.04, 0.0), (0.96, 0.0), (0.42, 0.40)] + arc(0.5, 0.70, 0.5, 0.30, 252, 515)]
+    if d == 4:
+        return [[(0.76, 1.0), (0.76, 0.0), (0.0, 0.70), (1.0, 0.70)]]
+    if d == 5:
+        return _rot180(soviet_digit_strokes(2))
+    if d == 6:
+        return [arc(0.5, 0.70, 0.48, 0.30, 0, 360), [(0.08, 0.62), (0.70, 0.0)]]
+    if d == 7:
+        return [[(0.0, 0.0), (1.0, 0.0), (0.28, 1.0)]]
+    if d == 8:
+        return [arc(0.5, 0.22, 0.40, 0.22, 90, 450), arc(0.5, 0.72, 0.48, 0.28, -90, 270)]
+    if d == 9:
+        return _rot180(soviet_digit_strokes(6))
+    raise ValueError(d)
+
+
 # --- rendering ------------------------------------------------------------------------------
 
 
