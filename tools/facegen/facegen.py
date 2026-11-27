@@ -41,6 +41,10 @@ SIZES = [(135, 240), (80, 160)]
 FALLBACK_DIR = ROOT / "components" / "faces"
 FALLBACK_FACE = "minimal"
 
+# old LED look: filled block segments, thick, narrow gaps, no glow
+_BLOCK = {"shape": "block", "thickness": 24.0, "gap": 1.0, "skew": 0.0, "glow": 0.0,
+          "ghost": 0.2, "color": "#ff1a12", "background": "#000000"}
+
 # preset -> (style, parameter overrides, display name)
 PRESETS: dict[str, tuple[str, dict, str]] = {
     "minimal": ("minimal", {}, "Minimal Amber"),
@@ -49,15 +53,25 @@ PRESETS: dict[str, tuple[str, dict, str]] = {
                       "Minimal Paper"),
     "nixie-glow": ("nixie", {}, "Nixie Glow"),
     "in14": ("in14", {}, "IN-14 Tube"),
-    "in14-violet": ("in14", {"base_glow": 0.9}, "IN-14 Tube Violet Base"),
+    "nixie-mesh": ("in14", {"zoom": 1.22, "stroke": 5.0, "mesh_pitch": 11.0, "jump": 0.09,
+                            "glow": "#ff3c00", "hot": "#ffc040", "soviet_5": False},
+                   "Nixie Mesh Close-up"),
     "seg7-red": ("sevenseg", {}, "7-Segment Red"),
     "seg7-green": ("sevenseg", {"color": "#30ff50"}, "7-Segment Green"),
     "seg7-lcd": ("sevenseg", {"lcd": True, "color": "#1c201c", "background": "#b4bca8",
                               "ghost": 0.05, "skew": 0.05}, "7-Segment LCD"),
+    "seg7-block-red": ("sevenseg", _BLOCK, "7-Segment Block Red"),
+    "seg7-block-green": ("sevenseg", {**_BLOCK, "color": "#2ee84a"}, "7-Segment Block Green"),
+    "seg7-block-gray": ("sevenseg", {**_BLOCK, "color": "#c8c8c8", "background": "#202020"},
+                        "7-Segment Block Gray"),
+    "seg7-block-bw": ("sevenseg", {**_BLOCK, "color": "#ffffff", "ghost": 0.12},
+                      "7-Segment Block Black-White"),
     "vfd": ("vfd", {}, "VFD Turquoise"),
     "varisymbol": ("varisymbol", {}, "Varisymbol"),
     "neon-pink": ("neon", {}, "Neon Pink"),
     "neon-blue": ("neon", {"color": "#3a8cff"}, "Neon Blue"),
+    "neon-retro": ("neon", {"shapes": "retro", "rainbow": True, "background": "#0c0a0e",
+                            "wall": 0.04, "gloss": 0.3}, "Neon Retro Rainbow"),
 }
 COMMON_META = {"author": "EleksTubeHAX2 facegen", "license": "CC0-1.0",
                "generator": "tools/facegen/facegen.py"}

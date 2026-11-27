@@ -21,11 +21,12 @@ SEVEN_DIGITS = {
 }
 
 
-def seven_segments(box, thickness: float, gap: float, skew: float = 0.0):
+def seven_segments(box, thickness: float, gap: float, skew: float = 0.0, shape: str = "hex"):
     """Polygons (pixel coordinates) for segments a-g inside box (x0, y0, x1, y1).
 
     thickness: segment width in pixels, gap: space between segment ends,
     skew: italic slant as x shift per pixel above the box centre (0.1 = mild italic).
+    shape: "hex" (pointed ends) or "block" (rectangles with small chamfers, old LED style).
     """
     x0, y0, x1, y1 = box
     h = thickness / 2
@@ -33,12 +34,22 @@ def seven_segments(box, thickness: float, gap: float, skew: float = 0.0):
     yt, ym, yb = y0 + h, (y0 + y1) / 2, y1 - h
     cy = (y0 + y1) / 2
 
+    c = h * 0.35  # chamfer of block segments
+
     def horiz(y):
         a, b = xl + gap, xr - gap
+        if shape == "block":
+            a, b = a - h + gap, b + h - gap
+            return [(a + c, y - h), (b - c, y - h), (b, y - h + c), (b, y + h - c), (b - c, y + h),
+                    (a + c, y + h), (a, y + h - c), (a, y - h + c)]
         return [(a, y), (a + h, y - h), (b - h, y - h), (b, y), (b - h, y + h), (a + h, y + h)]
 
     def vert(x, ya, yb_):
         a, b = ya + gap, yb_ - gap
+        if shape == "block":
+            a, b = a + h, b - h
+            return [(x - h + c, a), (x + h - c, a), (x + h, a + c), (x + h, b - c), (x + h - c, b),
+                    (x - h + c, b), (x - h, b - c), (x - h, a + c)]
         return [(x, a), (x + h, a + h), (x + h, b - h), (x, b), (x - h, b - h), (x - h, a + h)]
 
     segs = {

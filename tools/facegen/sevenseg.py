@@ -20,6 +20,7 @@ PARAMS = {
     "skew": 0.08,  # italic slant
     "glow": 0.6,
     "lcd": False,
+    "shape": "hex",  # "hex" (pointed ends) or "block" (filled rectangles, old LED style)
 }
 
 
@@ -35,7 +36,7 @@ def render(d: int | None, size=(135, 240), **params) -> Image.Image:
     w, h = size
     s = w / 135.0
     box = (22 * s, 34 * s, w - 22 * s, h - 34 * s)
-    segs = seven_segments(box, p["thickness"] * s, p["gap"] * s, p["skew"])
+    segs = seven_segments(box, p["thickness"] * s, p["gap"] * s, p["skew"], p["shape"])
     color = parse_color(p["color"])
     every = polygon_mask(size, segs.values())
     lit = _lit_mask(size, segs, d)
@@ -47,5 +48,7 @@ def render(d: int | None, size=(135, 240), **params) -> Image.Image:
         return to_image(img)
     img += every[..., None] * col(color) * p["ghost"]
     core = tuple(min(255, c + 45) for c in color)
+    if p["glow"] <= 0:  # flat segments: exact colours, no light model
+        return to_image(img * (1 - lit[..., None]) + lit[..., None] * col(color))
     img += glow(lit, s * 0.7, color, p["glow"], core=core)
     return to_image(tonemap(img))

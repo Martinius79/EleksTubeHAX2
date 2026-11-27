@@ -16,7 +16,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from common import (SS, blur, col, digit_strokes, dot_mask, downsample, parse_color, rect_mask,
-                    stroke_mask, to_image)
+                    stack_depth, stroke_mask, to_image, transform, wobble)
 
 NAME = "nixie"
 PARAMS = {
@@ -26,11 +26,14 @@ PARAMS = {
     "ambient": (180, 12, 0),  # wide glow
     "far": (250, 35, 5),  # mid glow
     "near": (255, 85, 15),  # glow close to the wire
-    "core": (255, 210, 145),  # the wire itself
+    "core": (255, 228, 182),  # the wire itself (hot)
     "leads": (170, 120, 255),  # violet glow points at the cathode lead-ins
     "rods": (120, 96, 88),  # support rods
     "reflection": 0.22,  # highlights on the glass
     "depth": 0.6,  # blur of the cathodes behind the lit one (px at 135 wide)
+    "wobble": 0.007,  # hand-bent wire irregularity (unit box)
+    "jump": 0.05,  # size difference front/back of the cathode stack
+    "lead_metal": (150, 120, 110),  # lead wires from the support points to the cathode
 }
 
 
@@ -76,7 +79,12 @@ def render(d: int | None, size=(135, 240), **params) -> Image.Image:
         plate = rect_mask(size, (inner[0] - 2 * s, y0, inner[2] + 2 * s, y0 + 10 * s), 2 * s)
         img = img * (1 - plate[..., None]) + plate[..., None] * col((38, 30, 30))
 
-    lit = (stroke_mask(size, digit_strokes(d), box, 2.8 * s) if d is not None
+    def cathode(k):
+        """Shape of cathode k: bent wire, scaled by its depth in the stack."""
+        scale = 1 + prm["jump"] * (0.5 - stack_depth(k))
+        return transform(wobble(digit_strokes(k), prm["wobble"], seed=100 + k), scale)
+
+    lit = (stroke_mask(size, cathode(d), box, 2.8 * s) if d is not None
            else np.zeros((h, w), np.float32))
     glow_near = blur(lit, 2.0 * s)
     glow_far = blur(lit, 9.0 * s)
@@ -96,12 +104,10 @@ def render(d: int | None, size=(135, 240), **params) -> Image.Image:
     for k in range(10):
         if k == d:
             continue
-        off = ((k % 3) - 1) * 0.8 * s
-        b = (box[0] + off, box[1] + off * 0.5, box[2] + off, box[3] + off * 0.5)
-        m = stroke_mask(size, digit_strokes(k), b, 0.8 * s)
+        m = stroke_mask(size, cathode(k), box, 0.8 * s)
         if prm["depth"] > 0:
             m = blur(m, prm["depth"] * s)  # behind the lit cathode: slightly out of focus
-        img += (m * (0.15 + 4.0 * flood + 1.5 * ambient))[..., None] * col(prm["cathodes"])
+        img += (m * (0.28 + 6.0 * flood + 2.5 * ambient))[..., None] * col(prm["cathodes"])
 
     # support rods between the mica plates, lit by the discharge
     rods = np.zeros((h, w), np.float32)
@@ -114,13 +120,22 @@ def render(d: int | None, size=(135, 240), **params) -> Image.Image:
     img += ambient[..., None] * col(prm["ambient"]) * 1.0
     img += glow_far[..., None] * col(prm["far"]) * 1.8
     img += glow_near[..., None] * col(prm["near"]) * 2.4
-    img += lit[..., None] * col(prm["core"]) * 1.7
+    img += lit[..., None] * col(prm["core"]) * 2.1
 
-    # cathode lead-ins: small violet glow points top and bottom
-    for y in (box[1] - 7 * s, box[3] + 7 * s):
-        p = dot_mask(size, w / 2, y, 1.6 * s)
-        img += blur(p, 1.5 * s)[..., None] * col(prm["leads"]) * 2.5
-        img += p[..., None] * col((230, 210, 255))
+    # support points top and bottom; a lead wire connects them to the nearest point of the lit
+    # cathode, the violet glow sits where the wire meets the support
+    if d is not None:
+        pts = [(box[0] + u * (box[2] - box[0]), box[1] + v * (box[3] - box[1]))
+               for st in cathode(d) for u, v in st]
+        leads = np.zeros((h, w), np.float32)
+        for y in (box[1] - 7 * s, box[3] + 7 * s):
+            tx, ty = min(pts, key=lambda q: (q[0] - w / 2) ** 2 + (q[1] - y) ** 2)
+            leads = np.maximum(leads, stroke_mask(size, [[(0, 0), (1, 1)]],
+                                                  (w / 2, y, tx, ty), 0.7 * s))
+            dot = dot_mask(size, w / 2, y, 1.6 * s)
+            img += blur(dot, 1.5 * s)[..., None] * col(prm["leads"]) * 2.5
+            img += dot[..., None] * col((230, 210, 255))
+        img += (leads * (0.4 + 3.0 * glow_far))[..., None] * col(prm["lead_metal"])
 
     # glass highlights: a vertical streak on the left, a short one on the right shoulder
     if prm["reflection"] > 0:

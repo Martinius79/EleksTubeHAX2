@@ -181,3 +181,74 @@ def glow(mask: np.ndarray, s: float, color, strength: float = 1.0,
 def tonemap(img: np.ndarray, exposure: float = 1.4) -> np.ndarray:
     """Soft saturation instead of hard clipping for additive light."""
     return 1 - np.exp(-img * exposure)
+
+
+# --- hand-made look --------------------------------------------------------------------------
+
+# Cathode stack order of IN-14 style tubes, front to back.
+NIXIE_STACK = (1, 6, 2, 7, 5, 0, 4, 9, 8, 3)
+
+
+def stack_depth(d: int) -> float:
+    """Position of digit d in the cathode stack: 0.0 = front, 1.0 = back."""
+    return NIXIE_STACK.index(d) / (len(NIXIE_STACK) - 1)
+
+
+def wobble(strokes, amount: float, seed: int):
+    """Bend strokes slightly like hand-formed wire: smooth, deterministic displacement along the
+    path (amount in unit-box coordinates, e.g. 0.006)."""
+    if amount <= 0:
+        return strokes
+    rng = np.random.default_rng(seed)
+    out = []
+    for st in strokes:
+        pts = np.asarray(st, dtype=np.float64)
+        seg = np.r_[0.0, np.cumsum(np.hypot(*np.diff(pts, axis=0).T))]
+        t = seg / seg[-1] if seg[-1] > 0 else seg
+        disp = np.zeros_like(pts)
+        for axis in (0, 1):
+            for freq in (1.3, 2.9, 5.1):
+                phase = rng.uniform(0, 2 * np.pi)
+                disp[:, axis] += np.sin(2 * np.pi * freq * t + phase) / freq
+        closed = np.allclose(pts[0], pts[-1])
+        if closed:  # keep loops closed
+            disp -= np.outer(t, disp[-1] - disp[0]) + disp[0]
+        out.append([tuple(p) for p in pts + disp * amount])
+    return out
+
+
+def transform(strokes, scale: float = 1.0, dx: float = 0.0, dy: float = 0.0,
+              angle_deg: float = 0.0):
+    """Scale/rotate strokes around the unit-box centre, then shift (unit coordinates)."""
+    a = math.radians(angle_deg)
+    ca, sa = math.cos(a), math.sin(a)
+    out = []
+    for st in strokes:
+        pts = []
+        for u, v in st:
+            x, y = (u - 0.5) * scale, (v - 0.5) * scale
+            pts.append((0.5 + x * ca - y * sa + dx, 0.5 + x * sa + y * ca + dy))
+        out.append(pts)
+    return out
+
+
+def rounded_path(points, radius: float, n: int = 6):
+    """Polyline with rounded inner corners (radius in unit coordinates)."""
+    pts = [np.asarray(p, dtype=np.float64) for p in points]
+    if len(pts) < 3 or radius <= 0:
+        return [tuple(p) for p in pts]
+    out = [tuple(pts[0])]
+    for i in range(1, len(pts) - 1):
+        a, b, c = pts[i - 1], pts[i], pts[i + 1]
+        u1, u2 = (a - b), (c - b)
+        l1, l2 = np.linalg.norm(u1), np.linalg.norm(u2)
+        if l1 == 0 or l2 == 0:
+            continue
+        r = min(radius, l1 / 2, l2 / 2)
+        p1, p2 = b + u1 / l1 * r, b + u2 / l2 * r
+        for k in range(n + 1):  # quadratic Bezier from p1 via b to p2
+            t = k / n
+            q = (1 - t) ** 2 * p1 + 2 * (1 - t) * t * b + t ** 2 * p2
+            out.append(tuple(q))
+    out.append(tuple(pts[-1]))
+    return out
