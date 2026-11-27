@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# clangd settings: drop GCC-specific flags (-f*, -m*) from compile_commands.json that clangd rejects.
+CompileFlags:
+    Remove: [-f*, -m*]
